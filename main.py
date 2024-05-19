@@ -20,12 +20,12 @@ def classify_and_print_results(interpreter, labels, audio_data):
     label_id, prob = results[0]
     print(f"Detected: {labels[label_id]} with probability {prob:.4f}")
 
-    if labels[label_id] == '0 Background Noise':
-        print("Background Noise")
-    elif labels[label_id] == '1 開damn':
-        print("1 開damn")
-    elif labels[label_id] == '2 開燈':
-        print("2 開燈")
+    # if labels[label_id] == '0 Background Noise':
+    #     print("Background Noise")
+    # elif labels[label_id] == '1 開damn':
+    #     print("1 開damn")
+    # elif labels[label_id] == '2 開燈':
+    #     print("2 開燈")
 
 def main():
     labels = load_labels(LABELS_PATH)
