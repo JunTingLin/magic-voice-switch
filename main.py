@@ -1,5 +1,6 @@
 import os
 import time
+import threading
 import numpy as np
 import tensorflow as tf
 from audio_utils import get_audio, read_audio
@@ -12,6 +13,19 @@ LABELS_FILE = 'labels.txt'
 MODEL_PATH = os.path.join(MODEL_DIR, MODEL_FILE)
 LABELS_PATH = os.path.join(MODEL_DIR, LABELS_FILE)
 
+def classify_and_print_results(interpreter, labels, audio_data):
+    audio_data = np.fromfile(open('output.wav'), np.int16)[22:]
+    results = classify_audio(interpreter, audio_data)
+
+    label_id, prob = results[0]
+    print(f"Detected: {labels[label_id]} with probability {prob:.4f}")
+
+    if labels[label_id] == '0 Background Noise':
+        print("Background Noise")
+    elif labels[label_id] == '1 開damn':
+        print("1 開damn")
+    elif labels[label_id] == '2 開燈':
+        print("2 開燈")
 
 def main():
     labels = load_labels(LABELS_PATH)
@@ -21,22 +35,16 @@ def main():
     print("Interpreter initialized. Ready to classify audio commands.")
 
     while True:
-        get_audio()
-        audio_data = np.fromfile(open('output.wav'), np.int16)[22:]
+        # 使用多線程進行音頻錄製和推理
+        audio_thread = threading.Thread(target=get_audio)
+        audio_thread.start()
+        audio_thread.join()
 
-        print("Audio data shape:", audio_data.shape)
-        results = classify_audio(interpreter, audio_data)
+        # 開始推理
+        classify_thread = threading.Thread(target=classify_and_print_results, args=(interpreter, labels, None))
+        classify_thread.start()
+        classify_thread.join()
 
-        label_id, prob = results[0]
-        print(f"Detected: {labels[label_id]} with probability {prob:.4f}")
-
-        if labels[label_id] == '0 Background Noise':
-            print("0 Background Noise")
-        elif labels[label_id] == '1 開damn':
-            print("1 開damn")
-        elif labels[label_id] == '2 開燈':
-            print("2 開燈")
-        
         time.sleep(0.5)
 
 if __name__ == "__main__":
