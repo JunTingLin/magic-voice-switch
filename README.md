@@ -5,6 +5,9 @@
 with `PyAudio`, `tensorflow`, `openai`, `python-dotenv`
 
 ### Build `venv` for **MacOS**
+
+Mac should `brew install portaudio` at first to install `PyAudio`.
+
 ```shell
 $ python3 -m venv venv
 $ source venv/bin/activate
