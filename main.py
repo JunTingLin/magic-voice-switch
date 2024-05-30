@@ -21,9 +21,9 @@ def classify_and_print_results(interpreter, labels, audio_data):
     label_id, prob = results[0]
     print(f"Detected: {labels[label_id]} with probability {prob:.4f}")
 
-def stt_function(labels):
+def stt_function(labels, stt_mode):
     # 使用stt_audio進行語音轉文字
-    text = stt_audio('output.wav')
+    text = stt_audio('output.wav', mode=stt_mode)
     print(f"STT Result: {text}")
 
     # 進行分類
@@ -37,6 +37,12 @@ def main():
     if mode not in ['1', '2']:
         print("無效的選擇，請選擇1或2")
         return
+
+    if mode == '2':
+        stt_mode = input("請選擇STT模式 (google/openai): ").strip()
+        if stt_mode not in ['google', 'openai']:
+            print("無效的選擇，請選擇google或openai")
+            return
     
     labels = load_labels(LABELS_PATH)
     
@@ -46,7 +52,7 @@ def main():
         print("Interpreter initialized. Ready to classify audio commands.")
         duration = 1  # 模型模式下的錄音時間為1秒
     else:
-        print("STT mode selected. Ready to transcribe audio.")
+        print(f"STT mode ({stt_mode}) selected. Ready to transcribe audio.")
         duration = 3  # STT模式下的錄音時間為3秒
 
     while True:
@@ -60,13 +66,13 @@ def main():
             classify_thread = threading.Thread(target=classify_and_print_results, args=(interpreter, labels, None))
             classify_thread.start()
             classify_thread.join()
-            time.sleep(0.5)
         else:
             # 使用STT
-            stt_thread = threading.Thread(target=stt_function, args=(labels,))
+            stt_thread = threading.Thread(target=stt_function, args=(labels, stt_mode))
             stt_thread.start()
             stt_thread.join()
-            time.sleep(0.5)
+
+        time.sleep(0.5)
 
 if __name__ == "__main__":
     main()
