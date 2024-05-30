@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 from audio_utils import get_audio, read_audio
 from classify_utils import load_labels, classify_audio
+from stt_utils import stt_audio, classify_from_text
 
 # 設定模型和標籤文件的路徑
 MODEL_DIR = 'models'
@@ -20,32 +21,52 @@ def classify_and_print_results(interpreter, labels, audio_data):
     label_id, prob = results[0]
     print(f"Detected: {labels[label_id]} with probability {prob:.4f}")
 
-    # if labels[label_id] == '0 Background Noise':
-    #     print("Background Noise")
-    # elif labels[label_id] == '1 開damn':
-    #     print("1 開damn")
-    # elif labels[label_id] == '2 開燈':
-    #     print("2 開燈")
+def stt_function(labels):
+    # 使用stt_audio進行語音轉文字
+    text = stt_audio('output.wav')
+    print(f"STT Result: {text}")
+
+    # 進行分類
+    label_id, label, raw_text = classify_from_text(text)
+    print(f"Detected: {labels[label_id]} with label ID: {label_id}")
+    print(f"Raw Text: {raw_text}")
+
 
 def main():
+    mode = input("請選擇模式 (1: 使用模型, 2: 使用STT): ").strip()
+    if mode not in ['1', '2']:
+        print("無效的選擇，請選擇1或2")
+        return
+    
     labels = load_labels(LABELS_PATH)
-    interpreter = tf.lite.Interpreter(MODEL_PATH)
-    interpreter.allocate_tensors()
-
-    print("Interpreter initialized. Ready to classify audio commands.")
+    
+    if mode == '1':
+        interpreter = tf.lite.Interpreter(MODEL_PATH)
+        interpreter.allocate_tensors()
+        print("Interpreter initialized. Ready to classify audio commands.")
+        duration = 1  # 模型模式下的錄音時間為1秒
+    else:
+        print("STT mode selected. Ready to transcribe audio.")
+        duration = 3  # STT模式下的錄音時間為3秒
 
     while True:
-        # 使用多線程進行音頻錄製和推理
-        audio_thread = threading.Thread(target=get_audio)
+        # 使用多線程進行音頻錄製
+        audio_thread = threading.Thread(target=get_audio, args=("output.wav", duration))
         audio_thread.start()
         audio_thread.join()
 
-        # 開始推理
-        classify_thread = threading.Thread(target=classify_and_print_results, args=(interpreter, labels, None))
-        classify_thread.start()
-        classify_thread.join()
-
-        time.sleep(0.5)
+        if mode == '1':
+            # 開始推理
+            classify_thread = threading.Thread(target=classify_and_print_results, args=(interpreter, labels, None))
+            classify_thread.start()
+            classify_thread.join()
+            time.sleep(0.5)
+        else:
+            # 使用STT
+            stt_thread = threading.Thread(target=stt_function, args=(labels,))
+            stt_thread.start()
+            stt_thread.join()
+            time.sleep(0.5)
 
 if __name__ == "__main__":
     main()
