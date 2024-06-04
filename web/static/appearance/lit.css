@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap');
+
+body {
+    font-family: "Noto Sans Traditional Chinese", sans-serif;
+    font-weight: 900;
+    background-color: #FFFF00;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+p {
+    font-size: 5em;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(127, 127, 127, 12); 
+}

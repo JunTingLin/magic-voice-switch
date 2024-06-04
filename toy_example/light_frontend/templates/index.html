@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>燈控制</title>
+    <script>
+        function toggleLight() {
+            // 透過 Fetch API 來向後端發送切換燈的請求
+            fetch('/toggle_light', {
+                method: 'POST',
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 更新燈的狀態顯示
+                document.getElementById('lightStatus').innerText = data.status;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>燈控制</h1>
+    <button onclick="toggleLight()">切換燈</button>
+    <p>燈的狀態：<span id="lightStatus">{}</span></p>
+</body>
+</html>
