@@ -14,16 +14,24 @@ $(document).ready(function() {
 
             let audioData = [];
             let nextSliceTime = audioContext.currentTime;
+            let isProcessing = false;
 
             processor.onaudioprocess = function(e) {
+                if (isProcessing) return; // 如果正在處理，則跳過這次事件
+                
                 const inputData = e.inputBuffer.getChannelData(0);
                 audioData.push(...inputData);
 
                 if (audioContext.currentTime >= nextSliceTime) {
                     nextSliceTime += 1;
                     let wavBuffer = encodeWAV(audioData, audioContext.sampleRate, 1, 16);
-                    saveWAVBuffer(wavBuffer, 'output.wav');
-                    audioData = [];
+                    isProcessing = true;
+                    sendWAVBufferToServer(wavBuffer).then(() => {
+                        audioData = [];
+                        setTimeout(() => {
+                            isProcessing = false;
+                        }, 500); // 0.5秒的延遲
+                    });
                 }
             };
 
@@ -34,13 +42,26 @@ $(document).ready(function() {
         });
 });
 
-function saveWAVBuffer(buffer, filename) {
-    let blob = new Blob([buffer], { type: 'audio/wav' });
-    let url = URL.createObjectURL(blob);
-    let a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
+function sendWAVBufferToServer(buffer) {
+    return new Promise((resolve, reject) => {
+        let blob = new Blob([buffer], { type: 'audio/wav' });
+        let formData = new FormData();
+        formData.append('file', blob, 'output.wav');
+
+        fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                console.log('WAV file sent to server');
+                resolve();
+            } else {
+                console.error('Failed to send WAV file to server');
+                reject();
+            }
+        }).catch(error => {
+            console.error('Error sending WAV file to server:', error);
+            reject();
+        });
+    });
 }
