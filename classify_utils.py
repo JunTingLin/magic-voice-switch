@@ -4,7 +4,8 @@ import tensorflow as tf
 def load_labels(path):
     try:
         with open(path, 'r', encoding='utf-8') as f:
-            labels = {i: line.strip() for i, line in enumerate(f.readlines())}
+            # 使用 split 函數將每行的數字和標籤分開，並僅保留標籤部分
+            labels = [line.strip().split(maxsplit=1)[1] for line in f.readlines()]
         return labels
     except Exception as e:
         print(f"Error reading labels file: {e}")
