@@ -14,22 +14,23 @@ LABELS_FILE = 'labels.txt'
 MODEL_PATH = os.path.join(MODEL_DIR, MODEL_FILE)
 LABELS_PATH = os.path.join(MODEL_DIR, LABELS_FILE)
 
-def classify_and_print_results(interpreter, labels, audio_data):
-    audio_data = np.fromfile(open('output.wav'), np.int16)[22:]
+def classify_and_print_results(interpreter, labels, audio_path='output.wav'):
+    audio_data = np.fromfile(open(audio_path), np.int16)[22:]
     results = classify_audio(interpreter, audio_data)
 
     label_id, prob = results[0]
     print(f"Detected: {labels[label_id]} with probability {prob:.4f}")
 
-def stt_function(labels, stt_mode):
+def stt_function(labels, stt_mode, audio_path='output.wav'):
     # 使用stt_audio進行語音轉文字
-    text = stt_audio('output.wav', mode=stt_mode)
+    text = stt_audio(audio_path, mode=stt_mode)
     print(f"STT Result: {text}")
 
     # 進行分類
     label_id, label, raw_text = classify_from_text(text)
     print(f"Detected: {labels[label_id]} with label ID: {label_id}")
     print(f"Raw Text: {raw_text}")
+
 
 
 def main():
@@ -63,7 +64,7 @@ def main():
 
         if mode == '1':
             # 開始推理
-            classify_thread = threading.Thread(target=classify_and_print_results, args=(interpreter, labels, None))
+            classify_thread = threading.Thread(target=classify_and_print_results, args=(interpreter, labels))
             classify_thread.start()
             classify_thread.join()
         else:
