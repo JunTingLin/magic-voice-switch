@@ -1,11 +1,11 @@
-document.addEventListener('DOMContentLoaded', function() {
+$(document).ready(function() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         console.error("navigator API is not supported");
         return;
     }
 
     navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
+        .then(function(stream) {
             let AudioContext = window.AudioContext || window.webkitAudioContext;
             let audioContext = new AudioContext();
             let source = audioContext.createMediaStreamSource(stream);
@@ -17,17 +17,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
             processor.onaudioprocess = function(e) {
                 const inputData = e.inputBuffer.getChannelData(0);
-                Array.prototype.push.apply(audioData, Array.from(inputData));
+                audioData.push(...inputData);
 
                 if (audioContext.currentTime >= nextSliceTime) {
                     nextSliceTime += 1;
-                    let wavBuffer = encodeWAV(audioData, audioContext.readAudioRate, 1, 16);
-                    handleWAVBuffer(wavBuffer); 
-                    audioData = []; 
+                    let wavBuffer = encodeWAV(audioData, audioContext.sampleRate, 1, 16);
+                    saveWAVBuffer(wavBuffer, 'output.wav');
+                    audioData = [];
                 }
             };
+
+            processor.connect(audioContext.destination);
         })
-        .catch(err => {
+        .catch(function(err) {
             console.error("microphone access denied/other...", err);
         });
 });
+
+function saveWAVBuffer(buffer, filename) {
+    let blob = new Blob([buffer], { type: 'audio/wav' });
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}

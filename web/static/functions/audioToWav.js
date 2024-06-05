@@ -1,4 +1,3 @@
-//float格式的音訊轉wav檔所加上的header及file format (感謝GPT)
 function encodeWAV(readAudio, readAudioRate, numChannels, bitsPerAudio) {
     const buffer = new ArrayBuffer(44 + readAudio.length * 2);
     const view = new DataView(buffer);
