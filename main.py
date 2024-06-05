@@ -1,6 +1,7 @@
 import os
 import time
 import threading
+import json
 import numpy as np
 import tensorflow as tf
 from audio_utils import get_audio, read_audio
@@ -14,7 +15,7 @@ LABELS_FILE = 'labels.txt'
 MODEL_PATH = os.path.join(MODEL_DIR, MODEL_FILE)
 LABELS_PATH = os.path.join(MODEL_DIR, LABELS_FILE)
 
-def classify_and_print_results(model_path: str, labels_path: str, audio_path: str = 'output.wav') -> tuple:
+def classify_and_print_results(model_path: str, labels_path: str, audio_path: str = 'output.wav') -> str:
     """
     Classify audio data using a provided model and print the results.
 
@@ -24,7 +25,7 @@ def classify_and_print_results(model_path: str, labels_path: str, audio_path: st
         audio_path (str, optional): Path to the audio file. Defaults to 'output.wav'.
 
     Returns:
-        tuple: A tuple containing the detected label and its probability.
+        str: JSON string containing the detected label and its probability.
     """
     interpreter = tf.lite.Interpreter(model_path)
     interpreter.allocate_tensors()
@@ -35,9 +36,17 @@ def classify_and_print_results(model_path: str, labels_path: str, audio_path: st
     results = classify_audio(interpreter, audio_data)
 
     label_id, prob = results[0]
-    return labels[label_id], prob
+    # Convert label_id and prob to standard Python types
+    label_id = int(label_id)
+    prob = float(prob)
+    result_dict = {
+        "label_id": label_id,
+        "label": labels[label_id],
+        "probability": prob
+    }
+    return json.dumps(result_dict, ensure_ascii=False)
 
-def stt_function(labels_path: str, stt_mode: str = "google", audio_path: str = 'output.wav') -> tuple:
+def stt_function(labels_path: str, stt_mode: str = "google", audio_path: str = 'output.wav') -> str:
     """
     Perform speech-to-text (STT) on audio data and classify the text.
 
@@ -47,7 +56,7 @@ def stt_function(labels_path: str, stt_mode: str = "google", audio_path: str = '
         audio_path (str, optional): Path to the audio file. Defaults to 'output.wav'.
 
     Returns:
-        tuple: A tuple containing the detected label, label ID, and raw text.
+        str: JSON string containing the detected label, label ID, and raw text.
     """
     labels = load_labels(labels_path)
 
@@ -57,7 +66,12 @@ def stt_function(labels_path: str, stt_mode: str = "google", audio_path: str = '
     # 進行分類
     label_id, label, raw_text = classify_from_text(text)
 
-    return labels[label_id], label_id, raw_text
+    result_dict = {
+        "label_id": label_id,
+        "label": labels[label_id],
+        "raw_text": raw_text
+    }
+    return json.dumps(result_dict, ensure_ascii=False)
 
 def main():
     mode = input("Please select mode (1: Use Model, 2: Use STT): ").strip()
@@ -76,7 +90,7 @@ def main():
         duration = 1  # 模型模式下的錄音時間為1秒
     else:
         print(f"STT mode ({stt_mode}) selected. Ready to transcribe audio.")
-        duration = 3  # STT模式下的錄音時間為3秒
+        duration = 2  # STT模式下的錄音時間為3秒
 
     while True:
         # 使用多線程進行音頻錄製
@@ -86,13 +100,12 @@ def main():
 
         if mode == '1':
             # 開始推理
-            label, prob = classify_and_print_results(model_path=MODEL_PATH, labels_path=LABELS_PATH)
-            print(f"Detected: {label} with probability {prob:.4f}")
+            result_json = classify_and_print_results(model_path=MODEL_PATH, labels_path=LABELS_PATH)
+            print(result_json)
         else:
             # 使用STT
-            label, label_id, raw_text = stt_function(labels_path=LABELS_PATH, stt_mode=stt_mode)
-            print(f"Detected: {label} with label ID: {label_id}")
-            print(f"Raw Text: {raw_text}")
+            result_json = stt_function(labels_path=LABELS_PATH, stt_mode=stt_mode)
+            print(result_json)
 
         time.sleep(0.5)
 
