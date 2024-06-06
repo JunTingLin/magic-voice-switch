@@ -13,6 +13,7 @@ templates = Jinja2Templates(directory="templates")
 def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+# @api
 @app.get("/api/state")
 def get_state():
     return {"state": random.choice([1, 2])}
