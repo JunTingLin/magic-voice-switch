@@ -1,0 +1,5 @@
+0 Background Noise
+1 開damn
+2 開燈
+3 關damn
+4 關燈
