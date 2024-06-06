@@ -12,6 +12,8 @@ function checkState() {
         } else if (data.state === 2) {
             $('#theme-style').attr('href', '/static/appearance/lit.css');
             $content.text('Damnnn超亮!');
+        } else {
         }
+        // TODO: Add more states
     });
 }
