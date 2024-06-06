@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    setInterval(checkState, 3000);
+    setInterval(checkState, 1000);
 });
 
 function checkState() {

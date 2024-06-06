@@ -30,7 +30,7 @@ $(document).ready(function() {
                         audioData = [];
                         setTimeout(() => {
                             isProcessing = false;
-                        }, 500); // 0.5秒的延遲
+                        }, 0); // 0秒的延遲
                     });
                 }
             };
