@@ -69,3 +69,12 @@ You will be prompted to choose the mode:
 
 1. If you choose **Model**, the system will use the trained model for recognition.
 2. If you choose **STT**, you will be prompted to choose between Google or OpenAI for speech-to-text processing.
+
+## Demo
+
+https://github.com/JunTingLin/magic-voice-switch/assets/92431095/4d53c5d8-d348-4c3a-93af-00953b51a449
+
+https://github.com/JunTingLin/magic-voice-switch/assets/92431095/ed71c425-f4d8-4fec-9f05-4d28adad432d
+
+
+
